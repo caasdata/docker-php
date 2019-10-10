@@ -94,7 +94,7 @@ RUN set -eux; \
 	\
 	apk del --no-network .fetch-deps
 
-COPY docker-php-source /usr/local/bin/
+COPY docker-php-* /usr/local/bin/
 
 RUN set -eux; \
     chmod +x /usr/local/bin/docker-php-*; \
@@ -180,8 +180,6 @@ RUN set -eux; \
 	rm -rf /tmp/pear ~/.pearrc; \
 # smoke test
 	php --version
-
-COPY docker-php-ext-* docker-php-entrypoint /usr/local/bin/
 
 # sodium was built as a shared module (so that it can be replaced later if so desired), so let's enable it too (https://github.com/docker-library/php/issues/598)
 RUN docker-php-ext-enable sodium
