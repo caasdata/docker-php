@@ -97,6 +97,7 @@ RUN set -eux; \
 COPY docker-php-source /usr/local/bin/
 
 RUN set -eux; \
+    chmod +x /usr/local/bin/docker-php-*; \
 	apk add --no-cache --virtual .build-deps \
 		$PHPIZE_DEPS \
 		argon2-dev \
