@@ -59,6 +59,10 @@ ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
 ENV PHP_CPPFLAGS="$PHP_CFLAGS"
 ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
+# Test locally
+# COPY php-7.2.23.tar.xz /usr/src/php.tar.xz
+# COPY php-7.2.23.tar.xz.asc /usr/src/php.tar.xz.asc
+
 ENV GPG_KEYS 1729F83938DA44E27BA0F4D3DBDB397470D12172 B1B44D8F021E4E2D6021E995DC9FF8D3EE5AF27F
 
 ENV PHP_VERSION 7.2.23
@@ -107,7 +111,13 @@ RUN set -eux; \
 		libsodium-dev \
 		libxml2-dev \
 		openssl-dev \
-		sqlite-dev \
+		#sqlite-dev \
+		# gd
+		libjpeg \
+		libjpeg-turbo-dev \
+		libpng-dev \
+		freetype \
+		freetype-dev \
 	; \
 	\
 	export CFLAGS="$PHP_CFLAGS" \
@@ -129,7 +139,7 @@ RUN set -eux; \
 		--with-mhash \
 		\
 # --enable-ftp is included here because ftp_ssl_connect() needs ftp to be compiled statically (see https://github.com/docker-library/php/issues/236)
-		--enable-ftp \
+		#--enable-ftp \
 # --enable-mbstring is included here because otherwise there's no way to get pecl to use it properly (see https://github.com/docker-library/php/issues/195)
 		--enable-mbstring \
 # --enable-mysqlnd is included here because it's harder to compile after the fact than extensions are (since it's a plugin for several extensions, not an extension in itself)
@@ -139,8 +149,23 @@ RUN set -eux; \
 # https://wiki.php.net/rfc/libsodium
 		--with-sodium=shared \
 # always build against system sqlite3 (https://github.com/php/php-src/commit/6083a387a81dbbd66d6316a3a12a63f06d5f7109)
-		--with-pdo-sqlite=/usr \
-		--with-sqlite3=/usr \
+		#--with-pdo-sqlite=/usr \
+		#--with-sqlite3=/usr \
+		\
+		--with-pdo-mysql \
+		--enable-sockets \
+		--enable-bcmath \
+		--enable-zip \
+		--enable-sysvmsg \
+		--enable-sysvsem \
+		--enable-sysvshm \
+		--with-curl \
+		# gd
+		--with-gd \
+        --with-freetype-dir=/usr/include/ \
+        --with-png-dir=/usr/include/ \
+        --with-jpeg-dir=/usr/include/ \
+		--enable-pcntl \
 		\
 		--with-curl \
 		--with-libedit \
@@ -161,6 +186,11 @@ RUN set -eux; \
 	\
 # https://github.com/docker-library/php/issues/692 (copy default example "php.ini" files somewhere easily discoverable)
 	cp -v php.ini-* "$PHP_INI_DIR/"; \
+	\
+	pecl install igbinary-3.0.1 \
+    && docker-php-ext-enable igbinary; \
+    pecl install redis-5.0.2 \
+    && docker-php-ext-enable redis; \
 	\
 	cd /; \
 	docker-php-source delete; \
